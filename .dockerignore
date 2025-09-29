@@ -1,0 +1,23 @@
+# Node modules (host system) – Docker will install its own
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Environment files
+.env
+
+# Build outputs
+dist
+*.tsbuildinfo
+
+# Git files
+.git
+.gitignore
+
+# Prisma client generated files (optional, will regenerate in Docker)
+prisma/migrations
+
+# Mac/Windows system files
+.DS_Store
+Thumbs.db
+
