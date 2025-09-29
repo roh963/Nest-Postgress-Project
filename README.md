@@ -29,3 +29,21 @@ Use Postman collection: import `postman-collection.json`.
 - GET /health
 -GEt /docs
 
+## Auth Flow
+1. POST /auth/register → Create user.
+2. POST /auth/login → Get access+refresh tokens.
+3. Use access token in `Authorization: Bearer <token>` for protected routes.
+4. On access expiry, POST /auth/refresh → New tokens.
+5. POST /auth/logout → Revoke refresh.
+
+## Pagination
+GET /feedback?page=1&limit=10 → Returns `{ data, meta: { page, limit, total } }`.
+
+## Cache
+GET /feedback cached for 60s. Mutations clear cache.
+
+## Swagger
+/docs (use Bearer token for protected endpoints).
+
+## Postman
+Import postman-collection.json for auth, feedback flows.

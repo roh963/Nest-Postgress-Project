@@ -16,8 +16,5 @@ export class CreateFeedbackDto {
   @MinLength(10)
   message: string;
 
-  @ApiProperty({ example: 1, required: false })
-  @IsOptional()
-  @IsInt()
-  userId?: number;
+ 
 }
