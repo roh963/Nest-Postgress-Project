@@ -22,7 +22,7 @@ import { redisStore } from 'cache-manager-redis-yet';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         store: await redisStore({
-          url: configService.get<string>('REDIS_URL') || 'redis://localhost:6379',
+          url: configService.get<string>('REDIS_URL') ,
         }),
         ttl: 60 * 1000, // Default TTL: 60 seconds
       }),

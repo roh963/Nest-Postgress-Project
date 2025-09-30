@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Delete, Param, UseGuards, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete, Param, UseGuards, Query, UseInterceptors, HttpCode, DefaultValuePipe } from '@nestjs/common';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { FeedbackService } from './feedback.service';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
@@ -29,18 +29,22 @@ export class FeedbackController {
   @ApiResponse({ status: 200 })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  list(@Query('page', ParseIntPipe) page: number, @Query('limit', ParseIntPipe) limit: number) {
-    return this.feedbackService.list(page, limit);
-  }
+  list(
+  @Query('page', new DefaultValuePipe('1'), ParseIntPipe) page: number,
+  @Query('limit', new DefaultValuePipe('10'), ParseIntPipe) limit: number,
+) {
+  return this.feedbackService.list(page, limit);
+}
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete feedback (admin only)' })
-  @ApiResponse({ status: 204 })
+  @ApiResponse({ status: 200 })
+  @HttpCode(200)
   async delete(@Param('id', ParseIntPipe) id: number) {
     await this.feedbackService.delete(id);
-    return null;
+     return null;
   }
 }
