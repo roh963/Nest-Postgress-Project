@@ -1,8 +1,26 @@
-import { Controller, Post, Body, Get, Delete, Param, UseGuards, Query, UseInterceptors, HttpCode, DefaultValuePipe } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Delete,
+  Param,
+  UseGuards,
+  Query,
+  UseInterceptors,
+  HttpCode,
+  DefaultValuePipe,
+} from '@nestjs/common';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { FeedbackService } from './feedback.service';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
@@ -30,11 +48,11 @@ export class FeedbackController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   list(
-  @Query('page', new DefaultValuePipe('1'), ParseIntPipe) page: number,
-  @Query('limit', new DefaultValuePipe('10'), ParseIntPipe) limit: number,
-) {
-  return this.feedbackService.list(page, limit);
-}
+    @Query('page', new DefaultValuePipe('1'), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe('10'), ParseIntPipe) limit: number,
+  ) {
+    return this.feedbackService.list(page, limit);
+  }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -45,6 +63,6 @@ export class FeedbackController {
   @HttpCode(200)
   async delete(@Param('id', ParseIntPipe) id: number) {
     await this.feedbackService.delete(id);
-     return null;
+    return null;
   }
 }

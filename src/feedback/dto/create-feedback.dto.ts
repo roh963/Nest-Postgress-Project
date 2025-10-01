@@ -1,4 +1,10 @@
-import { IsEmail, IsString, MinLength, IsOptional, IsInt } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  IsOptional,
+  IsInt,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateFeedbackDto {
@@ -15,6 +21,4 @@ export class CreateFeedbackDto {
   @IsString()
   @MinLength(10)
   message: string;
-
- 
 }

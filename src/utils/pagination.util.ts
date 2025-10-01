@@ -11,7 +11,10 @@ export interface PaginationResult<T> {
 
 @Injectable()
 export class PaginationUtil {
-  getPaginationParams(page: number, limit: number): { page: number; limit: number } {
+  getPaginationParams(
+    page: number,
+    limit: number,
+  ): { page: number; limit: number } {
     const parsedPage = Math.max(1, page || 1);
     const parsedLimit = Math.min(Math.max(1, limit || 10), 100); // Max limit 100
     return { page: parsedPage, limit: parsedLimit };
@@ -23,9 +26,15 @@ export class PaginationUtil {
     page: number,
     limit: number,
   ): Promise<PaginationResult<T>> {
-    const { page: parsedPage, limit: parsedLimit } = this.getPaginationParams(page, limit);
+    const { page: parsedPage, limit: parsedLimit } = this.getPaginationParams(
+      page,
+      limit,
+    );
     const skip = (parsedPage - 1) * parsedLimit;
-    const [data, total] = await Promise.all([findMany(skip, parsedLimit), count()]);
+    const [data, total] = await Promise.all([
+      findMany(skip, parsedLimit),
+      count(),
+    ]);
     return {
       data,
       meta: { page: parsedPage, limit: parsedLimit, total },

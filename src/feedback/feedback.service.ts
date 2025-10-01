@@ -14,7 +14,9 @@ export class FeedbackService {
   ) {}
 
   async create(createFeedbackDto: CreateFeedbackDto) {
-    const result = await this.prisma.feedback.create({ data: createFeedbackDto });
+    const result = await this.prisma.feedback.create({
+      data: createFeedbackDto,
+    });
     await this.cacheManager.del('feedback:list:*');
     return result;
   }

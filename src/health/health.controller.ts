@@ -11,7 +11,7 @@ export class HealthController {
     return {
       status: 'OK',
       uptime: process.uptime(),
-      env: process.env.NODE_ENV ,
+      env: process.env.NODE_ENV,
       version: '1.0.0', // Update as needed
     };
   }
