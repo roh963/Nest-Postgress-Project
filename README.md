@@ -46,4 +46,45 @@ GET /feedback cached for 60s. Mutations clear cache.
 /docs (use Bearer token for protected endpoints).
 
 ## Postman
-Import postman-collection.json for auth, feedback flows.
+Import postman-collection.json for auth, feedback flows.    
+
+
+# Nest Postgres Starter
+
+A starter NestJS project with:
+
+- Google/GitHub OAuth + JWT
+- Prisma with transactions & unique constraints
+- Seed scripts for dev
+- File uploads (Cloudinary/local)
+- BullMQ queues & worker
+- Docker Compose (Nest + Postgres + Redis + Worker)
+- Swagger & Postman API documentation
+
+---
+
+# File Uploads & Queues
+
+This module adds production-style **file handling**, **background jobs**, and a **one-command local stack** for NestJS + Postgres + Redis + Worker.
+
+---
+
+## 1. File Uploads Module
+
+- **Endpoint:** `POST /files/upload`
+- **Supported file types:** `png`, `jpg`, `pdf`
+- **Max size:** 5MB
+- **Storage Options:**
+  - **Cloudinary (recommended)**
+  - **Local disk (for dev/training only)**
+- **DB Schema:** 
+```ts
+File {
+  id: string;
+  url: string;
+  key: string;
+  size: number;
+  mimetype: string;
+  uploadedBy: string; // User ID
+  createdAt: Date;
+}

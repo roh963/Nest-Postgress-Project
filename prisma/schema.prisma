@@ -14,10 +14,10 @@ model User {
   role         String        @default("user")
   createdAt    DateTime      @default(now())
   refreshToken String?
-
   feedbacks    Feedback[]
   providers    UserProvider[]
   auditLogs    AuditLog[]
+  files        File[]        // Add this for one-to-many relation with File
 }
 
 model Feedback {
@@ -26,9 +26,8 @@ model Feedback {
   email     String
   message   String
   createdAt DateTime @default(now())
-
-  userId Int?
-  user   User?    @relation(fields: [userId], references: [id])
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model UserProvider {
@@ -39,9 +38,7 @@ model UserProvider {
   accessToken    String
   refreshToken   String?
   createdAt      DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-
+  user           User     @relation(fields: [userId], references: [id])
   @@unique([provider, providerUserId])
 }
 
@@ -51,6 +48,16 @@ model AuditLog {
   action    String
   details   String?
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
 
-  user User @relation(fields: [userId], references: [id])
+model File {
+  id         String   @id @default(cuid())
+  url        String
+  key        String
+  size       Int
+  mimetype   String
+  uploadedBy Int
+  user       User     @relation(fields: [uploadedBy], references: [id]) // Relation to User
+  createdAt  DateTime @default(now())
 }

@@ -13,6 +13,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { redisStore } from 'cache-manager-redis-yet';
     HealthModule,
     UsersModule,
     FeedbackModule,
+    FilesModule,
     PrismaModule,
     AuthModule,
     CommonModule,
