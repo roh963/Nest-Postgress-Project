@@ -148,7 +148,19 @@
 					"name": "GoogleLogin",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/auth/google",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"auth",
+								"google"
+							]
+						}
 					},
 					"response": []
 				},
@@ -319,6 +331,19 @@
 								"upload"
 							]
 						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "metrics",
+			"item": [
+				{
+					"name": "metrics",
+					"request": {
+						"method": "GET",
+						"header": []
 					},
 					"response": []
 				}

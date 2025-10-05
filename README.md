@@ -88,3 +88,22 @@ File {
   uploadedBy: string; // User ID
   createdAt: Date;
 }
+
+## Logging
+- Structured logging with Pino (JSON format).
+- Request interceptor logs requestId, method, path, duration.
+- Sensitive fields masked (e.g., authorization headers, passwords).
+- Setup: Pino configured in AppModule, logger used globally.
+
+## Tracing and Metrics
+- OpenTelemetry for traces (HTTP, Prisma instrumented).
+- Traces exported to console.
+- Metrics exported to /metrics (Prometheus).
+- Setup: OTel SDK in main.ts, auto-instrumentations for HTTP/Prisma.
+- Track: Requests per route, durations, active sockets (optional queue lag).
+- Access metrics: curl http://localhost:3000/metrics
+
+## Rate Limiting
+- Global limit: 10 requests/60s.
+- Overrides: /auth (5 requests/60s), /files/upload (10 requests/60s).
+- Setup: ThrottlerModule in AppModule, ThrottlerGuard as global guard, @Throttle on routes.

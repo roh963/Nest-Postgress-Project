@@ -1,8 +1,8 @@
 import { Module, ClassSerializerInterceptor } from '@nestjs/common';
-import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from '@nestjs/config'; // Correct import
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HealthModule } from './health/health.module';
 import { UsersModule } from './users/users.module';
 import { FeedbackModule } from './feedback/feedback.module';
@@ -14,18 +14,33 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
 import { FilesModule } from './files/files.module';
+import { ThrottlerModule, ThrottlerGuard, ThrottlerModuleOptions } from '@nestjs/throttler';
+import { LoggerModule } from 'nestjs-pino';
+
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), // Use @nestjs/config
+    ConfigModule.forRoot({ isGlobal: true }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+        transport: process.env.NODE_ENV !== 'production' ? { target: 'pino-pretty' } : undefined,
+        redact: ['req.headers.authorization', 'password', 'secret'], // Mask sensitive fields
+        genReqId: (req) => req.headers['x-request-id'] || require('crypto').randomUUID(), // Custom requestId
+      },
+    }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }] ),
     CacheModule.registerAsync({
-      isGlobal: true, // Ensure CACHE_MANAGER is available globally
+      isGlobal: true,
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         store: await redisStore({
           url: configService.get<string>('REDIS_URL'),
         }),
-        ttl: 60 * 1000, // Default TTL: 60 seconds
+        ttl: 60 * 1000,
       }),
       inject: [ConfigService],
     }),
@@ -43,6 +58,7 @@ import { FilesModule } from './files/files.module';
     { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
+    { provide: APP_GUARD, useClass: ThrottlerGuard }, // Global rate limiting
   ],
 })
 export class AppModule {}
