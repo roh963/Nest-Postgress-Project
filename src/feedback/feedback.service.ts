@@ -15,11 +15,14 @@ export class FeedbackService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-    async create(createFeedbackDto: CreateFeedbackDto) {
+  async create(createFeedbackDto: CreateFeedbackDto) {
     const result = await this.prisma.feedback.create({
       data: createFeedbackDto,
     });
-     await this.notificationsService.enqueueNotification('feedback', result.id.toString());
+    await this.notificationsService.enqueueNotification(
+      'feedback',
+      result.id.toString(),
+    );
     await this.cacheManager.del('feedback:list:*');
     return result;
   }

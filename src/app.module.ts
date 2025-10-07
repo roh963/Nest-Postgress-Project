@@ -14,9 +14,9 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
 import { FilesModule } from './files/files.module';
-import { ThrottlerModule, ThrottlerGuard, ThrottlerModuleOptions } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
-
+import { randomUUID } from 'crypto';
 
 @Module({
   imports: [
@@ -24,15 +24,21 @@ import { LoggerModule } from 'nestjs-pino';
     LoggerModule.forRoot({
       pinoHttp: {
         level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
-        transport: process.env.NODE_ENV !== 'production' ? { target: 'pino-pretty' } : undefined,
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? { target: 'pino-pretty' }
+            : undefined,
         redact: ['req.headers.authorization', 'password', 'secret'], // Mask sensitive fields
-        genReqId: (req) => req.headers['x-request-id'] || require('crypto').randomUUID(), // Custom requestId
+        genReqId: (req) =>
+          req.headers['x-request-id'] || randomUUID() || crypto.randomUUID(), // Custom requestId
       },
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 10,
-    }] ),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
     CacheModule.registerAsync({
       isGlobal: true,
       imports: [ConfigModule],

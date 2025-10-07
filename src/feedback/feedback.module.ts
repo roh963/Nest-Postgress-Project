@@ -7,7 +7,12 @@ import { NotificationsModule } from 'src/notifications/notifications.module';
 import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
-  imports: [PrismaModule, CommonModule ,  NotificationsModule , CacheModule.register()],
+  imports: [
+    PrismaModule,
+    CommonModule,
+    NotificationsModule,
+    CacheModule.register(),
+  ],
   providers: [FeedbackService],
   controllers: [FeedbackController],
 })

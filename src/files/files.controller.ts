@@ -23,7 +23,10 @@ export class FilesController {
   @Post('upload')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file', multerConfig)) // Apply multer config
-  async uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
+  ) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
@@ -35,7 +38,8 @@ export class FilesController {
       throw new BadRequestException('Authenticated user not found in request');
     }
 
-    const rawId = userObj['id'] ?? userObj['sub'] ?? userObj['userId'] ?? userObj['uid'];
+    const rawId =
+      userObj['id'] ?? userObj['sub'] ?? userObj['userId'] ?? userObj['uid'];
     if (rawId === undefined || rawId === null) {
       throw new BadRequestException('User ID not found in token payload');
     }

@@ -27,11 +27,18 @@ export class FilesService {
     }
 
     // Validate file
-    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg','application/pdf'];
+    const allowedTypes = [
+      'image/png',
+      'image/jpeg',
+      'image/jpg',
+      'application/pdf',
+    ];
     const maxSize = 5 * 1024 * 1024; // 5MB
 
     if (!allowedTypes.includes(file.mimetype)) {
-      throw new BadRequestException('Invalid file type. Allowed: png, jpg, pdf');
+      throw new BadRequestException(
+        'Invalid file type. Allowed: png, jpg, pdf',
+      );
     }
 
     if (file.size > maxSize) {
@@ -73,7 +80,12 @@ export class FilesService {
     }
 
     // Save metadata to Postgres
-    console.log('Saving file metadata. uploadedBy=', uploadedBy, 'typeof=', typeof uploadedBy);
+    console.log(
+      'Saving file metadata. uploadedBy=',
+      uploadedBy,
+      'typeof=',
+      typeof uploadedBy,
+    );
     const fileData = await this.prisma.file.create({
       data: {
         url,
@@ -83,7 +95,7 @@ export class FilesService {
         uploadedBy, // Now correctly typed as number
       },
     });
-      await this.notificationsService.enqueueNotification('file', fileData.id);
+    await this.notificationsService.enqueueNotification('file', fileData.id);
     return fileData;
   }
 }

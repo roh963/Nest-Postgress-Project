@@ -1,3 +1,5 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
 import Redis from 'ioredis';
 import { Logger } from '@nestjs/common';
 
@@ -9,6 +11,7 @@ class BullMQRedisConfig {
   public static getInstance(): Redis {
     if (!BullMQRedisConfig.instance) {
       const redisUrl = process.env.REDIS_URL;
+      logger.log(`REDIS_URL: ${redisUrl}`);
       if (!redisUrl) {
         logger.error('REDIS_URL is not defined in environment variables');
         throw new Error('REDIS_URL is not defined');

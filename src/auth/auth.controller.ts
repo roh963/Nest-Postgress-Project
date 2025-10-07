@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Req, UseGuards, Get, Res } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+  Get,
+  Res,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -13,10 +21,16 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { Throttle } from '@nestjs/throttler';
 import { Deprecated } from 'src/common/decorators/deprecated.decorator';
 
+interface User {
+  id: number;
+  email: string;
+  role: string;
+}
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
@@ -28,7 +42,6 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
-
   @Post('login')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ApiOperation({ summary: 'Login user' })
@@ -37,7 +50,6 @@ export class AuthController {
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
-
 
   @Post('refresh')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
@@ -48,7 +60,6 @@ export class AuthController {
     return this.authService.refresh(refreshToken);
   }
 
-
   @Post('logout')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @UseGuards(JwtAuthGuard)
@@ -56,17 +67,17 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout user' })
   @ApiResponse({ status: 200, description: 'Logged out' })
   logout(@Req() req, @Body('refreshToken') refreshToken: string) {
-    return this.authService.logout(req.user.id, refreshToken);
+    const user = req.user as User;
+    const userId = user.id;
+    return this.authService.logout(userId, refreshToken);
   }
-
 
   @Get('google')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Start Google OAuth flow' })
   @ApiResponse({ status: 302, description: 'Redirect to Google consent' })
-  googleAuth() { }
-
+  googleAuth() {}
 
   @Get('google/callback')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
@@ -88,14 +99,12 @@ export class AuthController {
     return this.authService.createSession(user);
   }
 
-
   @Get('github')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @UseGuards(AuthGuard('github'))
   @ApiOperation({ summary: 'Start GitHub OAuth flow' })
   @ApiResponse({ status: 302, description: 'Redirect to GitHub consent' })
-  githubAuth() { }
-
+  githubAuth() {}
 
   @Get('github/callback')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
