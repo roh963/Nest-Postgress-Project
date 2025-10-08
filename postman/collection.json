@@ -20,22 +20,14 @@
                 "listen": "test",
                 "script": {
                   "exec": [
-                    "\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n"
+                    "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});"
                   ],
                   "type": "text/javascript"
                 }
               }
             ],
             "url": {
-              "raw": "{{STAGING_URL}}/v1/health",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "health"
-              ]
+              "raw": "{{STAGING_URL}}/v1/health"
             }
           },
           "response": []
@@ -55,21 +47,14 @@
                 "listen": "test",
                 "script": {
                   "exec": [
-                    "\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n"
+                    "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});"
                   ],
                   "type": "text/javascript"
                 }
               }
             ],
             "url": {
-              "raw": "{{STAGING_URL}}/docs",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "docs"
-              ]
+              "raw": "{{STAGING_URL}}/docs"
             }
           },
           "response": []
@@ -94,23 +79,14 @@
               }
             },
             "url": {
-              "raw": "{{STAGING_URL}}/v1/auth/refresh",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "refresh"
-              ]
+              "raw": "{{STAGING_URL}}/v1/auth/refresh"
             },
             "event": [
               {
                 "listen": "test",
                 "script": {
                   "exec": [
-                    "\npm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n"
+                    "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});"
                   ],
                   "type": "text/javascript"
                 }
@@ -144,23 +120,14 @@
               }
             },
             "url": {
-              "raw": "{{STAGING_URL}}/v1/auth/logout",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "logout"
-              ]
+              "raw": "{{STAGING_URL}}/v1/auth/logout"
             },
             "event": [
               {
                 "listen": "test",
                 "script": {
                   "exec": [
-                    "\npm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n"
+                    "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});"
                   ],
                   "type": "text/javascript"
                 }
@@ -184,23 +151,14 @@
               }
             },
             "url": {
-              "raw": "{{STAGING_URL}}/v1/auth/login",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "login"
-              ]
+              "raw": "{{STAGING_URL}}/v1/auth/login"
             },
             "event": [
               {
                 "listen": "test",
                 "script": {
                   "exec": [
-                    "\npm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n"
+                    "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});"
                   ],
                   "type": "text/javascript"
                 }
@@ -224,23 +182,14 @@
               }
             },
             "url": {
-              "raw": "{{STAGING_URL}}/v1/auth/register",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "register"
-              ]
+              "raw": "{{STAGING_URL}}/v1/auth/register"
             },
             "event": [
               {
                 "listen": "test",
                 "script": {
                   "exec": [
-                    "\npm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n"
+                    "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});"
                   ],
                   "type": "text/javascript"
                 }
@@ -255,23 +204,14 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{STAGING_URL}}/v1/auth/google",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "google"
-              ]
+              "raw": "{{STAGING_URL}}/v1/auth/google"
             },
             "event": [
               {
                 "listen": "test",
                 "script": {
                   "exec": [
-                    "\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n"
+                    "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});"
                   ],
                   "type": "text/javascript"
                 }
@@ -286,23 +226,14 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{STAGING_URL}}/v1/auth/github",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "github"
-              ]
+              "raw": "{{STAGING_URL}}/v1/auth/github"
             },
             "event": [
               {
                 "listen": "test",
                 "script": {
                   "exec": [
-                    "\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n"
+                    "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});"
                   ],
                   "type": "text/javascript"
                 }
@@ -341,22 +272,14 @@
               }
             },
             "url": {
-              "raw": "{{STAGING_URL}}/v1/feedback",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "feedback"
-              ]
+              "raw": "{{STAGING_URL}}/v1/feedback"
             },
             "event": [
               {
                 "listen": "test",
                 "script": {
                   "exec": [
-                    "\npm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n"
+                    "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});"
                   ],
                   "type": "text/javascript"
                 }
@@ -381,23 +304,14 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{STAGING_URL}}/v1/feedback/1",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "feedback",
-                "1"
-              ]
+              "raw": "{{STAGING_URL}}/v1/feedback/1"
             },
             "event": [
               {
                 "listen": "test",
                 "script": {
                   "exec": [
-                    "\npm.test(\"Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});\n"
+                    "pm.test(\"Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});"
                   ],
                   "type": "text/javascript"
                 }
@@ -408,9 +322,6 @@
         },
         {
           "name": "Feedback-Get",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
           "request": {
             "auth": {
               "type": "bearer",
@@ -424,32 +335,15 @@
             },
             "method": "GET",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\":\"Rohan Mehra\",\r\n    \"email\":\"\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
-              "raw": "{{STAGING_URL}}/v1/feedback",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "feedback"
-              ]
+              "raw": "{{STAGING_URL}}/v1/feedback"
             },
             "event": [
               {
                 "listen": "test",
                 "script": {
                   "exec": [
-                    "\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n"
+                    "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});"
                   ],
                   "type": "text/javascript"
                 }
@@ -489,23 +383,14 @@
               ]
             },
             "url": {
-              "raw": "{{STAGING_URL}}/v1/files/upload",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "files",
-                "upload"
-              ]
+              "raw": "{{STAGING_URL}}/v1/files/upload"
             },
             "event": [
               {
                 "listen": "test",
                 "script": {
                   "exec": [
-                    "\npm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n"
+                    "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});"
                   ],
                   "type": "text/javascript"
                 }
