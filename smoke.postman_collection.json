@@ -1,0 +1,431 @@
+{
+	"info": {
+		"_postman_id": "72322b18-ba02-4026-a187-a366670d38f9",
+		"name": "smoke",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28519951",
+		"_collection_link": "https://gold-eclipse-634764.postman.co/workspace/My-Workspace~9c7e3821-89ce-4595-8592-c80a9c7f373d/collection/28519951-72322b18-ba02-4026-a187-a366670d38f9?action=share&source=collection_link&creator=28519951"
+	},
+	"item": [
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Health",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Docs",
+			"item": [
+				{
+					"name": "Docs",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI4MjMxLCJleHAiOjE3NjA1MzMwMzF9.t7weYs54Zw6wdQIw7iwavXQjSvPd9jRzhr9pVYG2n6Y\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://13.60.181.126/v1/auth/refresh",
+							"protocol": "http",
+							"host": [
+								"13",
+								"60",
+								"181",
+								"126"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI3NTYyLCJleHAiOjE3NTk5Mjg0NjJ9.K5hs-349gH5SfY-1UGz_gnUqJ3HCrmoUESSJ58OMNXY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n      \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI3NTYyLCJleHAiOjE3NjA1MzIzNjJ9.a7it3JQbD4pPXClix1niLxxnf8SBqOaUDQDLuzoxvxA\"\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://13.60.181.126/v1/auth/logout",
+							"protocol": "http",
+							"host": [
+								"13",
+								"60",
+								"181",
+								"126"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"smoke1@example.com\",\r\n  \"password\": \"Password123!\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://13.60.181.126/v1/auth/login",
+							"protocol": "http",
+							"host": [
+								"13",
+								"60",
+								"181",
+								"126"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "old routes",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}/auth/register",
+							"host": [
+								"{{baseurl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"smoke1@example.com\",\r\n  \"password\": \"Password123!\",\r\n  \"role\":\"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://13.60.181.126/v1/auth/register",
+							"protocol": "http",
+							"host": [
+								"13",
+								"60",
+								"181",
+								"126"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GoogleLogin",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://13.60.181.126/v1/auth/google",
+							"protocol": "http",
+							"host": [
+								"13",
+								"60",
+								"181",
+								"126"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"google"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GithubLogin",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://13.60.181.126/v1/auth/github",
+							"protocol": "http",
+							"host": [
+								"13",
+								"60",
+								"181",
+								"126"
+							],
+							"path": [
+								"v1",
+								"auth",
+								"github"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Feedback",
+			"item": [
+				{
+					"name": "Feedback-Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI3NTYyLCJleHAiOjE3NTk5Mjg0NjJ9.K5hs-349gH5SfY-1UGz_gnUqJ3HCrmoUESSJ58OMNXY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"Rohan Mehra\",\r\n    \"email\":\"test1@example.com\",\r\n    \"message\":\"Hello My name is Rohan10\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://13.60.181.126/v1/feedback",
+							"protocol": "http",
+							"host": [
+								"13",
+								"60",
+								"181",
+								"126"
+							],
+							"path": [
+								"v1",
+								"feedback"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Feedback-Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI3NTYyLCJleHAiOjE3NTk5Mjg0NjJ9.K5hs-349gH5SfY-1UGz_gnUqJ3HCrmoUESSJ58OMNXY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://13.60.181.126/v1/feedback/1",
+							"protocol": "http",
+							"host": [
+								"13",
+								"60",
+								"181",
+								"126"
+							],
+							"path": [
+								"v1",
+								"feedback",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Feedback-Get",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI3NTYyLCJleHAiOjE3NTk5Mjg0NjJ9.K5hs-349gH5SfY-1UGz_gnUqJ3HCrmoUESSJ58OMNXY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"Rohan Mehra\",\r\n    \"email\":\"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://13.60.181.126/v1/feedback",
+							"protocol": "http",
+							"host": [
+								"13",
+								"60",
+								"181",
+								"126"
+							],
+							"path": [
+								"v1",
+								"feedback"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Files",
+			"item": [
+				{
+					"name": "Upload",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI3NTYyLCJleHAiOjE3NTk5Mjg0NjJ9.K5hs-349gH5SfY-1UGz_gnUqJ3HCrmoUESSJ58OMNXY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "postman-cloud:///1f0953c5-f790-4b30-9ce3-a10740629c80"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://13.60.181.126/v1/files/upload",
+							"protocol": "http",
+							"host": [
+								"13",
+								"60",
+								"181",
+								"126"
+							],
+							"path": [
+								"v1",
+								"files",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseurl",
+			"value": "",
+			"type": "default"
+		}
+	]
+}

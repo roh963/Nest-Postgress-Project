@@ -107,3 +107,51 @@ File {
 - Global limit: 10 requests/60s.
 - Overrides: /auth (5 requests/60s), /files/upload (10 requests/60s).
 - Setup: ThrottlerModule in AppModule, ThrottlerGuard as global guard, @Throttle on routes.
+
+## Deployment Guide
+
+### Required Envs (.env.prod)
+- POSTGRES_PASSWORD=strongpass (match DATABASE_URL)
+- JWT_SECRET=...
+- All OAuth/Cloudinary secrets (see .env.example)
+
+### CI/CD Flow
+PR → CI (lint/test/e2e) → Main push → CD (build/push GHCR) → Smoke Tests → SSH Deploy EC2 → Migrations Auto → Live URL!
+
+Diagram: [Simple text: GitHub → GHCR Image → EC2 Docker Compose Up → URL Ready]
+
+### Rollback Steps
+1. Old commit SHAcopy (GH repo commits tab se).
+2. EC2 SSH: `cd ~/Nest-Postgress-Project && ./deploy.sh <old-sha>`
+3. Verify: `curl http://13.60.181.126/v1/health` + manual smoke.
+Example: `./deploy.sh abc123def456`
+
+### Staging vs Prod
+- Staging: Separate EC2/.env.staging, URL=staging.13.60.181.126
+- Prod: HTTPS + strong secrets, /metrics/docs IP whitelist (nginx.conf me 49.43.4.43)
+
+Security: Secrets GH Actions me only. Worker Redis retry code add if needed.
+
+## Deployment Guide
+
+### Required Envs (.env.prod)
+- POSTGRES_PASSWORD=strongpass (match DATABASE_URL)
+- JWT_SECRET=...
+- All OAuth/Cloudinary secrets (see .env.example)
+
+### CI/CD Flow
+PR → CI (lint/test/e2e) → Main push → CD (build/push GHCR) → Smoke Tests → SSH Deploy EC2 → Migrations Auto → Live URL!
+
+Diagram: [Simple text: GitHub → GHCR Image → EC2 Docker Compose Up → URL Ready]
+
+### Rollback Steps
+1. Old commit SHAcopy (GH repo commits tab se).
+2. EC2 SSH: `cd ~/Nest-Postgress-Project && ./deploy.sh <old-sha>`
+3. Verify: `curl http://13.60.181.126/v1/health` + manual smoke.
+Example: `./deploy.sh abc123def456`
+
+### Staging vs Prod
+- Staging: Separate EC2/.env.staging, URL=staging.13.60.181.126
+- Prod: HTTPS + strong secrets, /metrics/docs IP whitelist (nginx.conf me 49.43.4.43)
+
+Security: Secrets GH Actions me only. Worker Redis retry code add if needed.
