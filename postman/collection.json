@@ -402,11 +402,5 @@
       ]
     }
   ],
-  "variable": [
-    {
-      "key": "STAGING_URL",
-      "value": "http://13.60.181.126",
-      "type": "default"
-    }
-  ]
+  "variable": []
 }
