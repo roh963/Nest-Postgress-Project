@@ -17,7 +17,9 @@ model User {
   feedbacks    Feedback[]
   providers    UserProvider[]
   auditLogs    AuditLog[]
-  files        File[]        // Add this for one-to-many relation with File
+  files        File[]   
+
+  @@index([role])     
 }
 
 model Feedback {
@@ -28,6 +30,10 @@ model Feedback {
   createdAt DateTime @default(now())
   userId    Int?
   user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([createdAt(sort: Desc)])  // New: For sorting by date in descending order (pagination)
+  @@index([userId])                // New: For filtering by userId (FK)
+  @@index([email])                 // New: For filtering/search by email
 }
 
 model UserProvider {
@@ -44,11 +50,12 @@ model UserProvider {
 
 model AuditLog {
   id        Int      @id @default(autoincrement())
-  userId    Int
+  userId    Int?
   action    String
   details   String?
+  requestId String?
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model File {

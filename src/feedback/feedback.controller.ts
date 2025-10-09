@@ -65,4 +65,14 @@ export class FeedbackController {
     await this.feedbackService.delete(id);
     return null;
   }
+
+  @Get('analyze-list')
+  async analyzeList(@Query('page') page: number = 1, @Query('limit') limit: number = 10) {
+  return this.feedbackService.analyzeFeedbackListQuery(page, limit);
+}
+
+ @Get('analyze-search')
+async analyzeSearch(@Query('email') email: string = 'test@example.com') {
+  return this.feedbackService.analyzeFeedbackSearchQuery(email);
+}
 }

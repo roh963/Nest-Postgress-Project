@@ -155,3 +155,35 @@ Example: `./deploy.sh abc123def456`
 - Prod: HTTPS + strong secrets, /metrics/docs IP whitelist (nginx.conf me 49.43.4.43)
 
 Security: Secrets GH Actions me only. Worker Redis retry code add if needed.
+
+
+## Environment Variables
+| Variable                 | Description                                      | Default/Example                                      |
+|--------------------------|--------------------------------------------------|----------------------------------------------------|
+| NODE_ENV                | Environment (development, production, test)       | development                                        |
+| PORT                    | Application port                                 | 3000                                               |
+| CORS_ORIGINS            | Comma-separated allowed CORS origins             | http://localhost:3000,https://example.com          |
+| THROTTLE_TTL            | Rate limit TTL (seconds)                         | 60                                                 |
+| THROTTLE_LIMIT          | Default rate limit (requests per TTL)            | 10                                                 |
+| REDIS_URL               | Redis connection URL                             | redis://localhost:6379                             |
+| DATABASE_URL            | PostgreSQL connection URL                        | postgresql://postgres:postgres@localhost:5432/postgres |
+| POSTGRES_USER           | PostgreSQL user                                  | postgres                                           |
+| POSTGRES_PASSWORD       | PostgreSQL password                              | postgres                                           |
+| POSTGRES_DB             | PostgreSQL database name                         | postgres                                           |
+| JWT_SECRET              | JWT signing secret                               | <random-string>                                    |
+| JWT_REFRESH_SECRET      | JWT refresh token secret                         | <random-string>                                    |
+| ACCESS_TOKEN_TTL_MIN    | Access token TTL (minutes)                       | 15                                                 |
+| REFRESH_TOKEN_TTL_DAYS  | Refresh token TTL (days)                         | 7                                                  |
+| GOOGLE_CLIENT_ID        | Google OAuth client ID                           | <client-id>                                        |
+| GOOGLE_CLIENT_SECRET    | Google OAuth client secret                       | <client-secret>                                    |
+| GOOGLE_CALLBACK_URL     | Google OAuth callback URL                        | http://localhost:3000/auth/google/callback         |
+| GITHUB_CLIENT_ID        | GitHub OAuth client ID                           | <client-id>                                        |
+| GITHUB_CLIENT_SECRET    | GitHub OAuth client secret                       | <client-secret>                                    |
+| GITHUB_CALLBACK_URL     | GitHub OAuth callback URL                        | http://localhost:3000/auth/github/callback         |
+| OAUTH_CALLBACK_BASE     | OAuth callback base URL                          | http://localhost:3000                              |
+| CLOUDINARY_CLOUD_NAME   | Cloudinary cloud name                            | <cloud-name>                                       |
+| CLOUDINARY_API_KEY      | Cloudinary API key                               | <api-key>                                          |
+| CLOUDINARY_API_SECRET   | Cloudinary API secret                            | <api-secret>                                       |
+| WEBHOOK_URL_SLACK       | Slack/Discord webhook URL                        | <webhook-url>                                      |
+| GHCR_TOKEN              | GitHub Container Registry token                  | <token>                                            |
+| MAX_JSON_SIZE           | Max JSON payload size                            | 2mb                                                |

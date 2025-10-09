@@ -34,10 +34,9 @@ import { randomUUID } from 'crypto';
       },
     }),
     ThrottlerModule.forRoot([
-      {
-        ttl: 60000,
-        limit: 10,
-      },
+      { name: 'default', ttl: 60000, limit: 100 }, // Global: 100/min
+      { name: 'auth', ttl: 60000, limit: 5 }, // /auth/*: 5/min
+      { name: 'upload', ttl: 60000, limit: 20 }, // /files/upload: 20/min
     ]),
     CacheModule.registerAsync({
       isGlobal: true,

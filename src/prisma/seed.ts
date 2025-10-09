@@ -3,74 +3,35 @@ import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-async function main() {
-  const adminPassword = await bcrypt.hash('Admin123', 10);
-  const userPassword = await bcrypt.hash('User123', 10);
-
-  await prisma.$transaction(async (prisma) => {
-    const admin = await prisma.user.upsert({
-      where: { email: 'admin@example.com' },
-      update: {},
-      create: {
-        email: 'admin@example.com',
-        passwordHash: adminPassword,
-        role: 'admin',
-      },
-    });
-
-    const user = await prisma.user.upsert({
-      where: { email: 'user@example.com' },
-      update: {},
-      create: {
-        email: 'user@example.com',
-        passwordHash: userPassword,
-        role: 'user',
-      },
-    });
-
-    await prisma.feedback.createMany({
-      data: [
-        {
-          name: 'John Doe',
-          email: 'john@example.com',
-          message: 'Great app!',
-          userId: user.id,
-        },
-        {
-          name: 'Jane Doe',
-          email: 'jane@example.com',
-          message: 'Needs more features.',
-          userId: user.id,
-        },
-      ],
-      skipDuplicates: true,
-    });
-
-    await prisma.auditLog.createMany({
-      data: [
-        {
-          userId: admin.id,
-          action: 'SEED_CREATED',
-          details: 'Admin user created via seed',
-        },
-        {
-          userId: user.id,
-          action: 'SEED_CREATED',
-          details: 'User created via seed',
-        },
-      ],
-      skipDuplicates: true,
-    });
+async function seed() {
+  await prisma.user.deleteMany({ where: { email: { in: ['admin@example.com', 'user@example.com'] } } });
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: {},
+    create: {
+      email: 'admin@example.com',
+      passwordHash: await bcrypt.hash('admin123', 10),
+      role: 'admin',
+    },
   });
-
-  console.log('Database seeded successfully');
+  const user = await prisma.user.upsert({
+    where: { email: 'user@example.com' },
+    update: {},
+    create: {
+      email: 'user@example.com',
+      passwordHash: await bcrypt.hash('user123', 10),
+      role: 'user',
+    },
+  });
+  await prisma.feedback.deleteMany({ where: { userId: { in: [admin.id, user.id] } } });
+  const feedbacks = Array.from({ length: 1000 }, (_, i) => ({
+    name: `User ${i}`,
+    email: `test${i}@example.com`,
+    message: `Feedback ${i}`,
+    userId: i % 2 === 0 ? admin.id : user.id,
+  }));
+  await prisma.feedback.createMany({ data: feedbacks });
+  console.log('Seeded 2 users, 1000 feedbacks');
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+seed().finally(() => prisma.$disconnect());
