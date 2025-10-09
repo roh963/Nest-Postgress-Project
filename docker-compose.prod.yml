@@ -1,66 +1,62 @@
 version: '3.8'
-
 services:
   api:
-    image: ghcr.io/roh963/nest-postgress-project:${{ github.sha }}
+    image: ghcr.io/roh963/nest-postgress-project:latest
+    command: sh -c "npx prisma migrate deploy && npm run start:prod"  # Migrations + start
     ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=redis://redis:6379
-      - PORT=3000
-      - HEALTHCHECK_PATH=/health
-      - RATE_LIMIT_MAX=100
-    volumes:
-      - ./uploads:/app/uploads
+      - "3000"  
+    env_file: .env.prod
     depends_on:
+      db:
+        condition: service_healthy
       redis:
         condition: service_healthy
-      postgres:
-        condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
-    command: npm run start:prod
+      start_period: 40s  
+    restart: unless-stopped
 
   worker:
-    image: ghcr.io/roh963/nest-postgress-project:${{ github.sha }}
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=redis://redis:6379
+    image: ghcr.io/roh963/nest-postgress-project:latest
+    command: npm run start:worker
+    env_file: .env.prod
     depends_on:
       redis:
         condition: service_healthy
-      postgres:
-        condition: service_healthy
-    command: npm run start:worker
+    restart: unless-stopped
 
-  postgres:
-    image: postgres:16
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+  db:
+    image: postgres:15-alpine  # Alpine lighter
+    env_file: .env.prod  # POSTGRES_* vars
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nestdb"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
-    image: redis:7
+    image: redis:7-alpine
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"  
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+    restart: unless-stopped
 
 volumes:
   postgres_data:
