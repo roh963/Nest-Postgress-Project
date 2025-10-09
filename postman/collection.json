@@ -3,131 +3,144 @@
     "_postman_id": "72322b18-ba02-4026-a187-a366670d38f9",
     "name": "smoke",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "28519951",
-    "_collection_link": "https://gold-eclipse-634764.postman.co/workspace/My-Workspace~9c7e3821-89ce-4595-8592-c80a9c7f373d/collection/28519951-72322b18-ba02-4026-a187-a366670d38f9?action=share&source=collection_link&creator=28519951"
+    "_exporter_id": "28519951"
   },
   "item": [
-    {
-      "name": "Health",
-      "item": [
-        {
-          "name": "Health",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n"
-                  ],
-                  "type": "text/javascript"
-                }
-              }
-            ],
-            "url": {
-              "raw": "{{STAGING_URL}}/v1/health",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "health"
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Docs",
-      "item": [
-        {
-          "name": "Docs",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n"
-                  ],
-                  "type": "text/javascript"
-                }
-              }
-            ],
-            "url": {
-              "raw": "{{STAGING_URL}}/docs",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "docs"
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
     {
       "name": "Authentication",
       "item": [
         {
-          "name": "Refresh Token",
+          "name": "Register",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const timestamp = Date.now();",
+                  "pm.collectionVariables.set('testEmail', `smoke1-${timestamp}@example.com`);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Register returns 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI4MjMxLCJleHAiOjE3NjA1MzMwMzF9.t7weYs54Zw6wdQIw7iwavXQjSvPd9jRzhr9pVYG2n6Y\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\"email\": \"{{testEmail}}\", \"password\": \"Password123!\", \"role\": \"admin\"}",
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
-              "raw": "{{STAGING_URL}}/v1/auth/refresh",
+              "raw": "http://{{baseUrl}}/v1/auth/register",
               "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "refresh"
-              ]
-            },
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "\npm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n"
-                  ],
-                  "type": "text/javascript"
-                }
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "auth", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login returns 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(pm.response.json()).to.have.property('accessToken');",
+                  "    pm.expect(pm.response.json()).to.have.property('refreshToken');",
+                  "    pm.collectionVariables.set('accessToken', pm.response.json().accessToken);",
+                  "    pm.collectionVariables.set('refreshToken', pm.response.json().refreshToken);",
+                  "});"
+                ],
+                "type": "text/javascript"
               }
-            ]
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{testEmail}}\", \"password\": \"Password123!\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "http://{{baseUrl}}/v1/auth/login",
+              "protocol": "http",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Refresh token returns 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\": \"{{refreshToken}}\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "http://{{baseUrl}}/v1/auth/refresh",
+              "protocol": "http",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "auth", "refresh"]
+            }
           },
           "response": []
         },
         {
           "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Logout returns 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI3NTYyLCJleHAiOjE3NTk5Mjg0NjJ9.K5hs-349gH5SfY-1UGz_gnUqJ3HCrmoUESSJ58OMNXY",
+                  "value": "{{accessToken}}",
                   "type": "string"
                 }
               ]
@@ -136,178 +149,48 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n      \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI3NTYyLCJleHAiOjE3NjA1MzIzNjJ9.a7it3JQbD4pPXClix1niLxxnf8SBqOaUDQDLuzoxvxA\"\r\n\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\"refreshToken\": \"{{refreshToken}}\"}",
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
-              "raw": "{{STAGING_URL}}/v1/auth/logout",
+              "raw": "http://{{baseUrl}}/v1/auth/logout",
               "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "logout"
-              ]
-            },
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "\npm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n"
-                  ],
-                  "type": "text/javascript"
-                }
-              }
-            ]
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "auth", "logout"]
+            }
           },
           "response": []
-        },
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
         {
-          "name": "Login",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"email\": \"smoke1@example.com\",\r\n  \"password\": \"Password123!\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+          "name": "Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Health check returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody({ status: 'OK' });",
+                  "});"
+                ],
+                "type": "text/javascript"
               }
-            },
-            "url": {
-              "raw": "{{STAGING_URL}}/v1/auth/login",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "login"
-              ]
-            },
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "\npm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n"
-                  ],
-                  "type": "text/javascript"
-                }
-              }
-            ]
-          },
-          "response": []
-        },
-        {
-          "name": "Register",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"email\": \"smoke1@example.com\",\r\n  \"password\": \"Password123!\",\r\n  \"role\":\"admin\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{STAGING_URL}}/v1/auth/register",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "register"
-              ]
-            },
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "\npm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n"
-                  ],
-                  "type": "text/javascript"
-                }
-              }
-            ]
-          },
-          "response": []
-        },
-        {
-          "name": "GoogleLogin",
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{STAGING_URL}}/v1/auth/google",
+              "raw": "http://{{baseUrl}}/v1/health",
               "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "google"
-              ]
-            },
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n"
-                  ],
-                  "type": "text/javascript"
-                }
-              }
-            ]
-          },
-          "response": []
-        },
-        {
-          "name": "GithubLogin",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{STAGING_URL}}/v1/auth/github",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "auth",
-                "github"
-              ]
-            },
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n"
-                  ],
-                  "type": "text/javascript"
-                }
-              }
-            ]
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "health"]
+            }
           },
           "response": []
         }
@@ -318,13 +201,27 @@
       "item": [
         {
           "name": "Feedback-Create",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Feedback create returns 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.collectionVariables.set('feedbackId', pm.response.json().id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI3NTYyLCJleHAiOjE3NTk5Mjg0NjJ9.K5hs-349gH5SfY-1UGz_gnUqJ3HCrmoUESSJ58OMNXY",
+                  "value": "{{accessToken}}",
                   "type": "string"
                 }
               ]
@@ -333,47 +230,40 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"name\":\"Rohan Mehra\",\r\n    \"email\":\"test1@example.com\",\r\n    \"message\":\"Hello My name is Rohan10\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\"name\": \"Rohan Mehra\", \"email\": \"test1@example.com\", \"message\": \"Hello My name is Rohan10\"}",
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
-              "raw": "{{STAGING_URL}}/v1/feedback",
+              "raw": "http://{{baseUrl}}/v1/feedback",
               "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "feedback"
-              ]
-            },
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "\npm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n"
-                  ],
-                  "type": "text/javascript"
-                }
-              }
-            ]
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "feedback"]
+            }
           },
           "response": []
         },
         {
           "name": "Feedback-Delete",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Feedback delete returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI3NTYyLCJleHAiOjE3NTk5Mjg0NjJ9.K5hs-349gH5SfY-1UGz_gnUqJ3HCrmoUESSJ58OMNXY",
+                  "value": "{{accessToken}}",
                   "type": "string"
                 }
               ]
@@ -381,141 +271,70 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{STAGING_URL}}/v1/feedback/1",
+              "raw": "http://{{baseUrl}}/v1/feedback/{{feedbackId}}",
               "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "feedback",
-                "1"
-              ]
-            },
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "\npm.test(\"Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});\n"
-                  ],
-                  "type": "text/javascript"
-                }
-              }
-            ]
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "feedback", "{{feedbackId}}"]
+            }
           },
           "response": []
         },
         {
           "name": "Feedback-Get",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Feedback get returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI3NTYyLCJleHAiOjE3NTk5Mjg0NjJ9.K5hs-349gH5SfY-1UGz_gnUqJ3HCrmoUESSJ58OMNXY",
+                  "value": "{{accessToken}}",
                   "type": "string"
                 }
               ]
             },
             "method": "GET",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\":\"Rohan Mehra\",\r\n    \"email\":\"\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
-              "raw": "{{STAGING_URL}}/v1/feedback",
+              "raw": "http://{{baseUrl}}/v1/feedback",
               "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "feedback"
-              ]
-            },
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n"
-                  ],
-                  "type": "text/javascript"
-                }
-              }
-            ]
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Files",
-      "item": [
-        {
-          "name": "Upload",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic21va2UxQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU5OTI3NTYyLCJleHAiOjE3NTk5Mjg0NjJ9.K5hs-349gH5SfY-1UGz_gnUqJ3HCrmoUESSJ58OMNXY",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "file",
-                  "type": "file",
-                  "src": "postman-cloud:///1f0953c5-f790-4b30-9ce3-a10740629c80"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{STAGING_URL}}/v1/files/upload",
-              "protocol": "http",
-              "host": [
-                "{{STAGING_URL}}"
-              ],
-              "path": [
-                "v1",
-                "files",
-                "upload"
-              ]
-            },
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "\npm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\n"
-                  ],
-                  "type": "text/javascript"
-                }
-              }
-            ]
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "feedback"]
+            }
           },
           "response": []
         }
       ]
     }
   ],
-  "variable": []
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "testEmail",
+      "value": ""
+    },
+    {
+      "key": "feedbackId",
+      "value": ""
+    }
+  ]
 }

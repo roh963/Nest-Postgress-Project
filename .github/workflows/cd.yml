@@ -2,7 +2,7 @@ name: CD - Build and Push Docker Image
 
 on:
   push:
-    branches: [main]
+    branches: [main, "feature/*"]
 
 jobs:
   build-and-push:
@@ -30,7 +30,7 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/roh963/nest-postgress-project:latest,ghcr.io/roh963/nest-postgress-project:${{ github.sha }}
-          cache-from: type=gha   
+          cache-from: type=gha
           cache-to: type=gha,mode=max
 
   smoke-tests:
@@ -38,17 +38,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Create Test File
+        run: echo "Test file for upload" > test-file.txt
       - name: Run Smoke Tests
         env:
-         STAGING_URL: http://13.60.181.126  # Staging URL
+          STAGING_URL: http://13.60.181.126
         run: |
           npm install -g newman newman-reporter-html
           newman run postman/collection.json \
             --environment postman/environment.json \
-            --env-var STAGING_URL=${{ env.STAGING_URL }} \
+            --env-var baseUrl=$STAGING_URL \
             --reporters cli,html \
             --reporter-html-export smoke-report.html \
-            --bail  # Fail if any test red
+            --bail
       - name: Upload Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -57,7 +59,7 @@ jobs:
           path: smoke-report.html
 
   deploy:
-    needs: smoke-tests  # Smoke pass pe
+    needs: smoke-tests
     if: success()
     runs-on: ubuntu-latest
     steps:
@@ -70,10 +72,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/Nest-Postgress-Project
-            git pull origin main
+            git pull origin ${{ github.ref_name }}
             SHA=${{ github.sha }}
-            sed -i "s/latest/${SHA}/g" docker-compose.prod.yml
+            sed -i "s|ghcr.io/roh963/nest-postgress-project:.*|ghcr.io/roh963/nest-postgress-project:${SHA}|g" docker-compose.prod.yml
             docker compose -f docker-compose.prod.yml down
-            docker compose -f docker-compose.prod.yml up -d
+            docker compose -f docker-compose.prod.yml up -d --build
             sleep 20
-            docker compose logs --tail=20 api
+            docker compose -f docker-compose.prod.yml logs --tail=20 api
+            docker compose -f docker-compose.prod.yml exec -T api npx prisma migrate deploy

@@ -1,13 +1,11 @@
 {
-  "id": "smoke-staging-id",
-  "name": "Smoke-Staging",
+  "id": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+  "name": "Staging Environment",
   "values": [
     {
-      "key": "STAGING_URL",
-      "value": "http://13.60.181.126",
+      "key": "baseUrl",
+      "value": "13.60.181.126",
       "enabled": true
     }
-  ],
-  "_postman_variable_scope": "environment",
-  "_postman_exported_using": "Postman/10.0"
+  ]
 }
