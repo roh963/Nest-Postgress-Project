@@ -55,7 +55,7 @@ jobs:
           npm install -g newman newman-reporter-html
           newman run postman/collection.json \
             --environment postman/environment.json \
-            --env-var baseUrl=$STAGING_URL \
+            --env-var baseUrl=13.60.181.126 \
             --reporters cli,html \
             --reporter-html-export smoke-report.html \
             --bail
