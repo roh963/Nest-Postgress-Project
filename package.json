@@ -15,7 +15,6 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:seed": "ts-node ./src/prisma/seed.ts",
-    "postinstall": "npx prisma generate",
     "worker": "nodemon --exec ts-node src/notifications/notifications.worker.ts",
     "start:worker": "node dist/notifications/notifications.worker.js",
     "docker:up": "docker-compose --env-file .env.docker up -d --build",

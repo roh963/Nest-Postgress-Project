@@ -29,11 +29,14 @@ ENV NODE_ENV=production
 
 WORKDIR /app
 
-# Add non-root user if not present
+# Add non-root user
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 nestjs \
     && chown -R nestjs:nodejs /app
 
+# Add netcat for worker
+USER root
+RUN apk add --no-cache netcat-openbsd
 USER nestjs
 
 # Copy package files for prod install
@@ -45,20 +48,19 @@ RUN npm ci --only=production
 # Copy built dist from builder
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 
-# Copy Prisma client (generated) and schema/migrations for migrate deploy
+# Copy Prisma client (generated) and prisma folder for schema
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
 
-# Expose port (configurable via ENV)
+# Expose port
 ENV PORT=3000
 EXPOSE $PORT
 
-# Healthcheck: configurable path via ENV (default /health)
+# Healthcheck
 ENV HEALTH_PATH=/health
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost:$PORT$HEALTH_PATH || exit 1
 
-
-# Default command (override in docker-compose or Render)
-CMD ["npm", "run", "start:prod"]
+# Default command
+CMD ["node", "dist/main"]
