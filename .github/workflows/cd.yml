@@ -35,6 +35,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check DB_PASSWORD
+        run: |
+          if [ -z "${{ secrets.DB_PASSWORD }}" ]; then
+            echo "Error: DB_PASSWORD is not set"
+            exit 1
+          fi
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
         env:
@@ -60,6 +66,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
           script: |
             cd ~/Nest-Postgress-Project || git clone https://github.com/roh963/nest-postgress-project.git ~/Nest-Postgress-Project && cd ~/Nest-Postgress-Project
             git fetch origin
@@ -89,7 +96,7 @@ jobs:
             THROTTLE_LIMIT=$THROTTLE_LIMIT
             PORT=3000
             NODE_ENV=production
-            CORS_ORIGINS=http://13.60.181.126,https://example.com
+            CORS_ORIGINS=http://13.60.181.126,http://my-nest-app.duckdns.org,https://example.com
             EOF
             chmod 600 .env.prod
             docker compose -f docker-compose.prod.yml down || true
