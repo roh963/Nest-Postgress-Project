@@ -40,6 +40,8 @@ jobs:
           if [ -z "${{ secrets.DB_PASSWORD }}" ]; then
             echo "Error: DB_PASSWORD is not set"
             exit 1
+          else
+            echo "DB_PASSWORD is set: ${{ secrets.DB_PASSWORD }}"
           fi
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
@@ -73,6 +75,7 @@ jobs:
             git reset --hard origin/${{ github.ref_name }}
             SHA=${{ github.sha }}
             sed -i "s|ghcr.io/roh963/nest-postgress-project:.*|ghcr.io/roh963/nest-postgress-project:${SHA}|g" docker-compose.prod.yml
+            echo "Creating .env.prod with DB_PASSWORD=$DB_PASSWORD"
             cat > .env.prod << EOF
             DB_PASSWORD=$DB_PASSWORD
             DATABASE_URL=postgresql://postgres:$DB_PASSWORD@db:5432/nestdb?schema=public
@@ -99,6 +102,7 @@ jobs:
             CORS_ORIGINS=http://13.60.181.126,http://my-nest-app.duckdns.org,https://example.com
             EOF
             chmod 600 .env.prod
+            cat .env.prod  # Debug: Print .env.prod content
             docker compose -f docker-compose.prod.yml down || true
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
