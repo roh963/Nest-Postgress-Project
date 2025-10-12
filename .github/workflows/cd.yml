@@ -41,7 +41,7 @@ jobs:
             echo "Error: DB_PASSWORD is not set"
             exit 1
           else
-            echo "DB_PASSWORD is set: ${{ secrets.DB_PASSWORD }}"
+            echo "DB_PASSWORD is set (value: ${{ secrets.DB_PASSWORD }})"
           fi
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
