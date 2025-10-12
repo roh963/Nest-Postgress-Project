@@ -4,7 +4,7 @@
   "values": [
     {
       "key": "baseUrl",
-      "value": "13.60.181.126",
+      "value": "http://13.60.181.126:3000",
       "enabled": true
     }
   ]
