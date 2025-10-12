@@ -45,7 +45,7 @@ services:
     image: postgres:15
     restart: always
     environment:
-      POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}  # Use secrets
+      POSTGRES_PASSWORD: ${DB_PASSWORD}  # Use secrets
       POSTGRES_USER: postgres
       POSTGRES_DB: nestdb
     ports:
