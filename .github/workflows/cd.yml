@@ -19,7 +19,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GH_TOKEN }}
+          password: ${{ secrets.GHCR_PAT }}
       - uses: docker/setup-buildx-action@v3
       - uses: docker/build-push-action@v6
         with:
@@ -67,7 +67,7 @@ jobs:
           WEBHOOK_URL_SLACK: ${{ secrets.WEBHOOK_URL_SLACK }}
           THROTTLE_TTL: ${{ secrets.THROTTLE_TTL }}
           THROTTLE_LIMIT: ${{ secrets.THROTTLE_LIMIT }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
           ACTOR: ${{ github.actor }}
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -107,12 +107,13 @@ jobs:
             CORS_ORIGINS=http://13.60.181.126,http://my-nest-app.duckdns.org,https://example.com
             EOF
             chmod 600 .env.prod
-            echo "$GH_TOKEN" | docker login ghcr.io -u $ACTOR --password-stdin
+            printf '%s\n' "$GHCR_PAT" | docker login ghcr.io -u $ACTOR --password-stdin
             docker compose -f docker-compose.prod.yml --env-file .env.prod down || true
             docker compose -f docker-compose.prod.yml --env-file .env.prod pull || exit 1
             docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+            sleep 30  # Wait for startup
+            docker compose -f docker-compose.prod.yml --env-file .env.prod exec api npx prisma migrate deploy || true
             docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=100
-
   smoke-tests:
     needs: deploy
     runs-on: ubuntu-latest
@@ -124,7 +125,7 @@ jobs:
             echo "Error: postman-collection.json not found!"
             exit 1
           fi
-          newman run postman-collection.json --env-var baseUrl=${{ secrets.STAGING_URL }} -r html --reporter-html-export smoke-report.html
+          newman run postman-collection.json --env-var baseUrl=${{ secrets.STAGING_URL }} -r html --reporter-html-export smoke-report.html || exit 1
       - uses: actions/upload-artifact@v4
         with:
           name: smoke-report
