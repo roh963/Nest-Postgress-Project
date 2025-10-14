@@ -33,9 +33,15 @@ jobs:
           cache-to: type=gha,mode=max
           attestations: type=provenance,mode=max
 
+---
+
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+    # 💡 FIX: GitHub Container Registry (GHCR) से pull करने के लिए 'packages: read' permission जरूरी है।
+    permissions:
+      contents: read
+      packages: read 
     steps:
       - uses: actions/checkout@v4
       - name: Check DB_PASSWORD
@@ -67,7 +73,8 @@ jobs:
           WEBHOOK_URL_SLACK: ${{ secrets.WEBHOOK_URL_SLACK }}
           THROTTLE_TTL: ${{ secrets.THROTTLE_TTL }}
           THROTTLE_LIMIT: ${{ secrets.THROTTLE_LIMIT }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          # GH_TOKEN को environment variable के रूप में set करें, ताकि यह SSH script के अंदर चला जाए।
+          GH_TOKEN: ${{ secrets.GH_TOKEN }} 
           ACTOR: ${{ github.actor }}
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -116,6 +123,8 @@ jobs:
             sleep 30
             docker compose -f docker-compose.prod.yml --env-file .env.prod exec api npx prisma migrate deploy || true
             docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=100
+
+---
 
   smoke-tests:
     needs: deploy
