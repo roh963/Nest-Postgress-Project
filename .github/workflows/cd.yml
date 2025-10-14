@@ -11,21 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
       - run: npm ci --legacy-peer-deps
-
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GH_TOKEN }}
-
       - uses: docker/setup-buildx-action@v3
-
       - uses: docker/build-push-action@v6
         with:
           context: .
@@ -46,7 +41,6 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v4
-
       - name: Check DB_PASSWORD
         run: |
           if [ -z "${{ secrets.DB_PASSWORD }}" ]; then
@@ -55,7 +49,6 @@ jobs:
           else
             echo "DB_PASSWORD is set"
           fi
-
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
         env:
@@ -88,10 +81,8 @@ jobs:
             cd ~/nest-postgress-project || git clone https://github.com/roh963/nest-postgress-project.git ~/nest-postgress-project && cd ~/nest-postgress-project
             git fetch origin
             git reset --hard origin/${{ github.ref_name }}
-
             SHA=${{ github.sha }}
             sed -i "s|ghcr.io/roh963/nest-postgress-project:.*|ghcr.io/roh963/nest-postgress-project:${SHA}|g" docker-compose.prod.yml
-
             echo "Creating .env.prod"
             cat > .env.prod << EOF
             DB_PASSWORD=$DB_PASSWORD
@@ -119,7 +110,6 @@ jobs:
             CORS_ORIGINS=http://13.60.181.126,http://my-nest-app.duckdns.org,https://example.com
             EOF
             chmod 600 .env.prod
-
             echo "Attempting robust Docker GHCR login via config.json..."
             AUTH_STRING=$(echo -n "$ACTOR:$GH_TOKEN" | base64 -w 0)
             mkdir -p ~/.docker
@@ -132,35 +122,27 @@ jobs:
               }
             }
             DOCKER_EOF
-             docker compose -f docker-compose.prod.yml --env-file .env.prod down || true
-             docker compose -f docker-compose.prod.yml --env-file .env.prod pull || exit 1
-             docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
-             sleep 30
-             docker compose -f docker-compose.prod.yml --env-file .env.prod exec api npx prisma migrate deploy || true
-             docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=100
+            echo "Docker config updated, attempting pull..."
+            docker compose -f docker-compose.prod.yml --env-file .env.prod down || true
+            docker compose -f docker-compose.prod.yml --env-file .env.prod pull || exit 1
+            docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+            sleep 30
+            docker compose -f docker-compose.prod.yml --env-file .env.prod exec api npx prisma migrate deploy || true
+            docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=100
 
   smoke-tests:
     needs: deploy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Newman
-        run: npm install -g newman newman-reporter-html
-
-      - name: Run Smoke Tests
-        run: |
+      - run: npm install -g newman newman-reporter-html
+      - run: |
           if [ ! -f "postman-collection.json" ]; then
             echo "Error: postman-collection.json not found!"
             exit 1
           fi
-          newman run postman-collection.json \
-            --env-var baseUrl=${{ secrets.STAGING_URL }} \
-            -r html \
-            --reporter-html-export smoke-report.html || exit 1
-
-      - name: Upload Smoke Test Report
-        uses: actions/upload-artifact@v4
+          newman run postman-collection.json --env-var baseUrl=${{ secrets.STAGING_URL }} -r html --reporter-html-export smoke-report.html || exit 1
+      - uses: actions/upload-artifact@v4
         with:
           name: smoke-report
           path: smoke-report.html
