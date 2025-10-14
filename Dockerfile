@@ -34,9 +34,9 @@ RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 nestjs \
     && chown -R nestjs:nodejs /app
 
-# Add netcat for worker
+# Add netcat for worker retry
 USER root
-RUN apk add --no-cache netcat-openbsd
+RUN apk add --no-cache netcat-openbsd wget
 USER nestjs
 
 # Copy package files for prod install
@@ -57,10 +57,10 @@ COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
 ENV PORT=3000
 EXPOSE $PORT
 
-# Healthcheck
+# Healthcheck (standardize to /health)
 ENV HEALTH_PATH=/health
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost:$PORT$HEALTH_PATH || exit 1
 
-# Default command
+# Default command (for api service)
 CMD ["node", "dist/main"]
