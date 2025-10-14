@@ -107,9 +107,9 @@ jobs:
             CORS_ORIGINS=http://13.60.181.126,http://my-nest-app.duckdns.org,https://example.com
             EOF
             chmod 600 .env.prod
-            docker login ghcr.io -u $ACTOR -p $GH_TOKEN
+            echo "$GH_TOKEN" | docker login ghcr.io -u $ACTOR --password-stdin
             docker compose -f docker-compose.prod.yml --env-file .env.prod down || true
-            docker compose -f docker-compose.prod.yml --env-file .env.prod pull
+            docker compose -f docker-compose.prod.yml --env-file .env.prod pull || exit 1
             docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
             docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=100
 
@@ -119,7 +119,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: npm install -g newman newman-reporter-html
-      - run: newman run postman-collection.json --env-var baseUrl=${{ secrets.STAGING_URL }} -r html --reporter-html-export smoke-report.html
+      - run: |
+          if [ ! -f "postman-collection.json" ]; then
+            echo "Error: postman-collection.json not found!"
+            exit 1
+          fi
+          newman run postman-collection.json --env-var baseUrl=${{ secrets.STAGING_URL }} -r html --reporter-html-export smoke-report.html
       - uses: actions/upload-artifact@v4
         with:
           name: smoke-report
