@@ -3,7 +3,8 @@ name: CD - Build and Push Docker Image
 on:
   push:
     branches:
-      - main
+      - main 
+      - feature/aws-snow
 
 jobs:
   build-and-push:
