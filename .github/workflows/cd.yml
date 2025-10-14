@@ -19,7 +19,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
+          password: ${{ secrets.GH_TOKEN }}
       - uses: docker/setup-buildx-action@v3
       - uses: docker/build-push-action@v6
         with:
@@ -67,6 +67,7 @@ jobs:
           WEBHOOK_URL_SLACK: ${{ secrets.WEBHOOK_URL_SLACK }}
           THROTTLE_TTL: ${{ secrets.THROTTLE_TTL }}
           THROTTLE_LIMIT: ${{ secrets.THROTTLE_LIMIT }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           ACTOR: ${{ github.actor }}
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -106,8 +107,9 @@ jobs:
             CORS_ORIGINS=http://13.60.181.126,http://my-nest-app.duckdns.org,https://example.com
             EOF
             chmod 600 .env.prod
-            # Clear any bad cached login for public pull
+            # Clear cached auth and login for pull
             docker logout ghcr.io || true
+            printf '%s\n' "$GH_TOKEN" | docker login ghcr.io -u $ACTOR --password-stdin
             docker compose -f docker-compose.prod.yml --env-file .env.prod down || true
             docker compose -f docker-compose.prod.yml --env-file .env.prod pull || exit 1
             docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
