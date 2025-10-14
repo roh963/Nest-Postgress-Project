@@ -114,13 +114,7 @@ jobs:
             AUTH_STRING=$(echo -n "$ACTOR:$GH_TOKEN" | base64 -w 0)
             mkdir -p ~/.docker
             cat > ~/.docker/config.json << DOCKER_EOF
-            {
-              "auths": {
-                "ghcr.io": {
-                  "auth": "$AUTH_STRING"
-                }
-              }
-            }
+            {"auths":{"ghcr.io":{"auth":"$AUTH_STRING"}}}
             DOCKER_EOF
             echo "Docker config updated, attempting pull..."
             docker compose -f docker-compose.prod.yml --env-file .env.prod down || true
