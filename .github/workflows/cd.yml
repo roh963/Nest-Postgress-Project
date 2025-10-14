@@ -3,8 +3,7 @@ name: CD - Build and Push Docker Image
 on:
   push:
     branches:
-      - main 
-      - feature/aws-snow
+      - main
 
 jobs:
   build-and-push:
@@ -67,6 +66,8 @@ jobs:
           WEBHOOK_URL_SLACK: ${{ secrets.WEBHOOK_URL_SLACK }}
           THROTTLE_TTL: ${{ secrets.THROTTLE_TTL }}
           THROTTLE_LIMIT: ${{ secrets.THROTTLE_LIMIT }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          ACTOR: ${{ github.actor }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
@@ -105,10 +106,11 @@ jobs:
             CORS_ORIGINS=http://13.60.181.126,http://my-nest-app.duckdns.org,https://example.com
             EOF
             chmod 600 .env.prod
-            docker compose -f docker-compose.prod.yml down || true
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d
-            docker compose -f docker-compose.prod.yml logs api --tail=100
+            docker login ghcr.io -u $ACTOR -p $GH_TOKEN
+            docker compose -f docker-compose.prod.yml --env-file .env.prod down || true
+            docker compose -f docker-compose.prod.yml --env-file .env.prod pull
+            docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+            docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=100
 
   smoke-tests:
     needs: deploy
@@ -116,7 +118,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: npm install -g newman newman-reporter-html
-      - run: newman run tests/smoke-tests.json --env-var baseUrl=${{ secrets.STAGING_URL }} -r html --reporter-html-export smoke-report.html
+      - run: newman run postman-collection.json --env-var baseUrl=${{ secrets.STAGING_URL }} -r html --reporter-html-export smoke-report.html
       - uses: actions/upload-artifact@v4
         with:
           name: smoke-report
