@@ -67,7 +67,6 @@ jobs:
           WEBHOOK_URL_SLACK: ${{ secrets.WEBHOOK_URL_SLACK }}
           THROTTLE_TTL: ${{ secrets.THROTTLE_TTL }}
           THROTTLE_LIMIT: ${{ secrets.THROTTLE_LIMIT }}
-          GHCR_PAT: ${{ secrets.GHCR_PAT }}
           ACTOR: ${{ github.actor }}
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -107,13 +106,15 @@ jobs:
             CORS_ORIGINS=http://13.60.181.126,http://my-nest-app.duckdns.org,https://example.com
             EOF
             chmod 600 .env.prod
-            printf '%s\n' "$GHCR_PAT" | docker login ghcr.io -u $ACTOR --password-stdin
+            # Clear any bad cached login for public pull
+            docker logout ghcr.io || true
             docker compose -f docker-compose.prod.yml --env-file .env.prod down || true
             docker compose -f docker-compose.prod.yml --env-file .env.prod pull || exit 1
             docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
             sleep 30
             docker compose -f docker-compose.prod.yml --env-file .env.prod exec api npx prisma migrate deploy || true
             docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=100
+
   smoke-tests:
     needs: deploy
     runs-on: ubuntu-latest
