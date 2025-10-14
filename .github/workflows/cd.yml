@@ -32,9 +32,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           attestations: type=provenance,mode=max
-
----
-
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
@@ -123,9 +120,6 @@ jobs:
             sleep 30
             docker compose -f docker-compose.prod.yml --env-file .env.prod exec api npx prisma migrate deploy || true
             docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=100
-
----
-
   smoke-tests:
     needs: deploy
     runs-on: ubuntu-latest
