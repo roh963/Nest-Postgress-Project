@@ -111,7 +111,7 @@ jobs:
             docker compose -f docker-compose.prod.yml --env-file .env.prod down || true
             docker compose -f docker-compose.prod.yml --env-file .env.prod pull || exit 1
             docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
-            sleep 30  # Wait for startup
+            sleep 30
             docker compose -f docker-compose.prod.yml --env-file .env.prod exec api npx prisma migrate deploy || true
             docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=100
   smoke-tests:
