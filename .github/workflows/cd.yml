@@ -32,10 +32,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           attestations: type=provenance,mode=max
+
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
-    # 💡 FIX: GitHub Container Registry (GHCR) से pull करने के लिए 'packages: read' permission जरूरी है।
     permissions:
       contents: read
       packages: read 
@@ -113,13 +113,15 @@ jobs:
             chmod 600 .env.prod
             # Clear cached auth and login for pull
             docker logout ghcr.io || true
-            printf '%s\n' "$GH_TOKEN" | docker login ghcr.io -u $ACTOR --password-stdin
+            # 🚀 FIX APPLIED: Using 'echo' instead of 'printf' for better compatibility
+            echo "$GH_TOKEN" | docker login ghcr.io -u $ACTOR --password-stdin
             docker compose -f docker-compose.prod.yml --env-file .env.prod down || true
             docker compose -f docker-compose.prod.yml --env-file .env.prod pull || exit 1
             docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
             sleep 30
             docker compose -f docker-compose.prod.yml --env-file .env.prod exec api npx prisma migrate deploy || true
             docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=100
+
   smoke-tests:
     needs: deploy
     runs-on: ubuntu-latest
