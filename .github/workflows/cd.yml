@@ -1,4 +1,4 @@
-name: CD - Build and Push Docker Image
+name: 🚀 CI/CD - Nest Postgres Project
 
 on:
   push:
@@ -6,22 +6,38 @@ on:
       - main
       - feature/aws-snow
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-push:
+    name: 🏗️ Build & Push Docker Image
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - run: npm ci --legacy-peer-deps
-      - uses: docker/login-action@v3
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GH_TOKEN }}
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & Push Docker Image
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
@@ -31,39 +47,26 @@ jobs:
             ghcr.io/roh963/nest-postgress-project:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          attestations: type=provenance,mode=max
 
   deploy:
+    name: 🚢 Deploy to EC2
     needs: build-and-push
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read 
+
     steps:
       - uses: actions/checkout@v4
-      - name: Check DB_PASSWORD
-        run: |
-          if [ -z "${{ secrets.DB_PASSWORD }}" ]; then
-            echo "Error: DB_PASSWORD is not set"
-            exit 1
-          else
-            echo "DB_PASSWORD is set"
-          fi
-      
-      # 💡 FINAL RELIABLE LOGIN FIX: Using SSH Action's env forwarding with echo for login
-      - name: Deploy to EC2
+
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.0
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
-          # ... (Your other envs) ...
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
           WEBHOOK_URL_SLACK: ${{ secrets.WEBHOOK_URL_SLACK }}
           THROTTLE_TTL: ${{ secrets.THROTTLE_TTL }}
           THROTTLE_LIMIT: ${{ secrets.THROTTLE_LIMIT }}
-          # Token and Actor are ESSENTIAL for the login command
-          GH_TOKEN: ${{ secrets.GH_TOKEN }} 
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           ACTOR: ${{ github.actor }}
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -71,57 +74,73 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            # 1. Setup Environment
+            set -e
+
+            echo "🔁 Updating project on EC2..."
             cd ~/nest-postgress-project || git clone https://github.com/roh963/nest-postgress-project.git ~/nest-postgress-project && cd ~/nest-postgress-project
+
             git fetch origin
             git reset --hard origin/${{ github.ref_name }}
             SHA=${{ github.sha }}
             sed -i "s|ghcr.io/roh963/nest-postgress-project:.*|ghcr.io/roh963/nest-postgress-project:${SHA}|g" docker-compose.prod.yml
-            
-            # 2. Create .env.prod
-            echo "Creating .env.prod"
+
+            echo "🧩 Creating .env.prod..."
             cat > .env.prod << EOF
             DB_PASSWORD=$DB_PASSWORD
             DATABASE_URL=postgresql://postgres:$DB_PASSWORD@db:5432/nestdb?schema=public
             JWT_SECRET=$JWT_SECRET
-            # ... (All your other envs) ...
+            JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET
+            CLOUDINARY_API_SECRET=$CLOUDINARY_API_SECRET
+            WEBHOOK_URL_SLACK=$WEBHOOK_URL_SLACK
+            THROTTLE_TTL=$THROTTLE_TTL
+            THROTTLE_LIMIT=$THROTTLE_LIMIT
             CORS_ORIGINS=http://13.60.181.126,http://my-nest-app.duckdns.org,https://example.com
             EOF
             chmod 600 .env.prod
 
-            # 3. ROBUST DOCKER LOGIN (Simpler, more reliable echo/stdin method)
-            echo "Attempting robust Docker GHCR login..."
-            # Clear any bad config file if it exists, to force a clean login
-            rm -f ~/.docker/config.json || true
-            
-            # The most standard and widely supported non-TTY login command
-            echo "$GH_TOKEN" | docker login ghcr.io -u $ACTOR --password-stdin || { 
-              echo "FATAL: Docker login failed. Check GH_TOKEN permissions (read:packages)!"
+            echo "🔐 Logging into GHCR (non-TTY safe)..."
+            echo "$GH_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin || {
+              echo "❌ Docker login failed. Ensure GH_TOKEN has read:packages & write:packages permissions."
               exit 1
             }
-            
-            # 4. Deploy Services
-            echo "Docker login successful. Attempting pull and deployment..."
+
+            echo "⬇️ Pulling and restarting containers..."
             docker compose -f docker-compose.prod.yml --env-file .env.prod down || true
-            docker compose -f docker-compose.prod.yml --env-file .env.prod pull || exit 1
+            docker compose -f docker-compose.prod.yml --env-file .env.prod pull
             docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
-            sleep 30
+
+            echo "🕒 Waiting for containers to stabilize..."
+            sleep 20
+
+            echo "⚙️ Running Prisma migrations..."
             docker compose -f docker-compose.prod.yml --env-file .env.prod exec api npx prisma migrate deploy || true
-            docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=100
+
+            echo "📜 Showing last 50 lines of API logs..."
+            docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=50
 
   smoke-tests:
+    name: 🧪 Smoke Tests (Postman)
     needs: deploy
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      - run: npm install -g newman newman-reporter-html
-      - run: |
+
+      - name: Install Newman
+        run: npm install -g newman newman-reporter-html
+
+      - name: Run Postman Collection
+        run: |
           if [ ! -f "postman-collection.json" ]; then
-            echo "Error: postman-collection.json not found!"
+            echo "❌ postman-collection.json not found!"
             exit 1
           fi
-          newman run postman-collection.json --env-var baseUrl=${{ secrets.STAGING_URL }} -r html --reporter-html-export smoke-report.html || exit 1
-      - uses: actions/upload-artifact@v4
+          newman run postman-collection.json \
+            --env-var baseUrl=${{ secrets.STAGING_URL }} \
+            -r html --reporter-html-export smoke-report.html
+
+      - name: Upload Smoke Test Report
+        uses: actions/upload-artifact@v4
         with:
           name: smoke-report
           path: smoke-report.html
