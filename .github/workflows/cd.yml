@@ -62,7 +62,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ✅ Simple secret verification
       - name: Verify required secrets
         run: |
           echo "Checking secrets..."
@@ -105,15 +104,34 @@ jobs:
 
             echo ">>> Create env file"
             cat > .env.prod <<EOF
-            DB_PASSWORD=${DB_PASSWORD:-defaultpass}
-            DATABASE_URL=postgresql://postgres:${DB_PASSWORD:-defaultpass}@db:5432/nestdb?schema=public
-            JWT_SECRET=${JWT_SECRET:-default}
-            JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-default}
-            CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET:-default}
-            WEBHOOK_URL_SLACK=${WEBHOOK_URL_SLACK:-}
+            NODE_ENV=production
+            DB_PASSWORD=${DB_PASSWORD:?Error: DB_PASSWORD not set}
+            DATABASE_URL=postgresql://postgres:${DB_PASSWORD:?Error: DB_PASSWORD not set}@db:5432/nestdb?schema=public
+            REDIS_URL=redis://redis:6379
+            JWT_SECRET=${JWT_SECRET:-78371695282dc652dab595399e3ef963}
+            JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-70214c0b4e3b87e8846a0bed82fb4a85}
+            PORT=3000
+            STAGING_URL=http://13.60.181.126
+            HEALTH_PATH=/health
+            POSTGRES_DB=nestdb
+            POSTGRES_USER=postgres
+            POSTGRES_PASSWORD=${DB_PASSWORD:?Error: DB_PASSWORD not set}
+            ACCESS_TOKEN_TTL_MIN=15
+            REFRESH_TOKEN_TTL_DAYS=7
+            CORS_ORIGINS=${CORS_ORIGINS:-*}
+            GOOGLE_CLIENT_ID=30970456551-fsk0lr61co87d51pcogadp6r3qm571ir.apps.googleusercontent.com
+            GOOGLE_CLIENT_SECRET=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
+            GOOGLE_CALLBACK_URL=http://13.60.181.126/auth/google/callback
+            GITHUB_CLIENT_ID=Ov23lipEgSf9C3aon5f6
+            GITHUB_CLIENT_SECRET=0fa8a15346f9a377044740324db84fcb1925dc2c
+            GITHUB_CALLBACK_URL=http://13.60.181.126/auth/github/callback
+            OAUTH_CALLBACK_BASE=http://13.60.181.126
+            CLOUDINARY_CLOUD_NAME=dynogoewn
+            CLOUDINARY_API_KEY=576497932985262
+            CLOUDINARY_API_SECRET=xbBcXETWNelmblLlgkZCh2pG4lc
+            WEBHOOK_URL_SLACK=${WEBHOOK_URL_SLACK:-https://discordapp.com/api/webhooks/1419640683672637550/o8ngECvD2YHrMWmff-37vPqSskvRSSm0f6B_ilZ8wLTKrcb4Znpo89j0G91Z_CF3CPCk}
             THROTTLE_TTL=${THROTTLE_TTL:-60}
             THROTTLE_LIMIT=${THROTTLE_LIMIT:-10}
-            CORS_ORIGINS=http://13.60.181.126,http://my-nest-app.duckdns.org,https://example.com
             EOF
             chmod 600 .env.prod
 
