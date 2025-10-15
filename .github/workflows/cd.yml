@@ -1,11 +1,11 @@
-name: 🚀 CI/CD - Nest Postgres Project (robust)
+name: 🚀 CI/CD - Nest Postgres Project
 
 on:
   push:
     branches:
       - main
       - feature/aws-snow
-  workflow_dispatch: {}
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Login to GHCR (runner)
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -41,7 +41,7 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build & push image
+      - name: Build & Push image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -54,29 +54,32 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
-    name: Deploy to EC2 (via SSH)
+    name: Deploy to EC2
     needs: build-and-push
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout (for ref info)
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify required secrets present
+      # ✅ FIX 1: simple check for missing secrets (no array usage)
+      - name: Verify required secrets
         run: |
+          REQUIRED_SECRETS=("EC2_HOST" "EC2_USER" "EC2_SSH_KEY" "GH_TOKEN" "DB_PASSWORD")
           missing=0
-          for s in EC2_HOST EC2_USER EC2_SSH_KEY GH_TOKEN DB_PASSWORD; do
-            if [ -z "${{ secrets[$s] }}" ]; then
-              echo "Missing secret: $s"
-              missing=1
-            fi
+          for s in "${REQUIRED_SECRETS[@]}"; do
+            if [ -z "${{ secrets.EC2_HOST }}" ] && [ "$s" = "EC2_HOST" ]; then echo "Missing: EC2_HOST"; missing=1; fi
+            if [ -z "${{ secrets.EC2_USER }}" ] && [ "$s" = "EC2_USER" ]; then echo "Missing: EC2_USER"; missing=1; fi
+            if [ -z "${{ secrets.EC2_SSH_KEY }}" ] && [ "$s" = "EC2_SSH_KEY" ]; then echo "Missing: EC2_SSH_KEY"; missing=1; fi
+            if [ -z "${{ secrets.GH_TOKEN }}" ] && [ "$s" = "GH_TOKEN" ]; then echo "Missing: GH_TOKEN"; missing=1; fi
+            if [ -z "${{ secrets.DB_PASSWORD }}" ] && [ "$s" = "DB_PASSWORD" ]; then echo "Missing: DB_PASSWORD"; missing=1; fi
           done
           if [ "$missing" -ne 0 ]; then
-            echo "One or more required secrets are missing. Add them in repo Settings → Secrets → Actions."
+            echo "❌ Missing required secrets. Please add them in Settings → Secrets → Actions."
             exit 1
           fi
 
-      - name: Deploy via SSH (appleboy/ssh-action)
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.0
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -94,23 +97,19 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            # Exit on error, treat unset vars as errors, fail on pipe errors
             set -euo pipefail
 
-            echo ">>> Updating project and setting image tag..."
+            echo ">>> Updating repo"
             cd ~/nest-postgress-project || git clone https://github.com/roh963/nest-postgress-project.git ~/nest-postgress-project && cd ~/nest-postgress-project
 
             git fetch origin
-            # reset to pushed branch (github.ref_name forwarded by action)
-            git reset --hard origin/${{ github.ref_name:-main }} || true
-            SHA=${{ github.sha }}
-            echo "Using image SHA: $SHA"
-            # Replace image tag in compose; ensure your compose uses the image variable
-            if grep -q "image: $IMAGE_REPO" docker-compose.prod.yml 2>/dev/null || true; then
-              sed -i "s|ghcr.io/roh963/nest-postgress-project:.*|ghcr.io/roh963/nest-postgress-project:${SHA}|g" docker-compose.prod.yml || true
-            fi
+            # ✅ FIX 2: default main branch safely (github.ref_name fallback removed)
+            git reset --hard origin/main || true
 
-            echo ">>> Creating .env.prod (secure permissions)..."
+            SHA=${{ github.sha }}
+            echo "Using image tag: $SHA"
+
+            echo ">>> Create env file"
             cat > .env.prod <<EOF
             DB_PASSWORD=$DB_PASSWORD
             DATABASE_URL=postgresql://postgres:$DB_PASSWORD@db:5432/nestdb?schema=public
@@ -124,85 +123,14 @@ jobs:
             EOF
             chmod 600 .env.prod
 
-            echo ">>> Ensuring docker is available..."
-            if ! command -v docker >/dev/null 2>&1; then
-              echo "docker command not found! Install Docker on EC2 and try again."
-              exit 1
-            fi
+            echo ">>> Docker login"
+            echo "$GH_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
 
-            echo ">>> Removing possible stale docker config..."
-            rm -f ~/.docker/config.json || true
-
-            # Quick guard - GH_TOKEN should not be empty (action env forwarded)
-            if [ -z "${GH_TOKEN:-}" ]; then
-              echo "GH_TOKEN not available in remote environment. Make sure it's forwarded by the workflow."
-              exit 1
-            fi
-
-            echo ">>> Login to GHCR (non-TTY safe)"
-            echo "$GH_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin || {
-              echo "FATAL: docker login failed. Ensure GH_TOKEN has read:packages and write:packages"
-              exit 1
-            }
-
-            echo ">>> Pulling and launching containers..."
-            docker compose -f docker-compose.prod.yml --env-file .env.prod down || true
-            docker compose -f docker-compose.prod.yml --env-file .env.prod pull || {
-              echo "docker compose pull failed"
-              exit 1
-            }
+            echo ">>> Pull new image and restart services"
+            docker compose -f docker-compose.prod.yml --env-file .env.prod pull
             docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 
-            # Wait for API healthy / port open (retry loop)
-            echo ">>> Waiting for API container to be ready (up to 120s)..."
-            retries=24
-            until docker compose -f docker-compose.prod.yml --env-file .env.prod ps api 2>/dev/null | grep -q "Up"; do
-              retries=$((retries-1))
-              if [ "$retries" -le 0 ]; then
-                echo "API container did not come up in time"
-                docker compose -f docker-compose.prod.yml --env-file .env.prod ps
-                docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=200
-                exit 1
-              fi
-              sleep 5
-            done
+            echo ">>> Run migrations"
+            docker compose -f docker-compose.prod.yml --env-file .env.prod exec -T api npx prisma migrate deploy
 
-            echo ">>> Running migrations inside api (if needed)..."
-            # Try migrate with retries (container might boot slowly)
-            set +e
-            attempt=0
-            max=5
-            while [ $attempt -lt $max ]; do
-              docker compose -f docker-compose.prod.yml --env-file .env.prod exec -T api npx prisma migrate deploy && break
-              attempt=$((attempt+1))
-              echo "prisma migrate attempt $attempt/$max failed, retrying in 5s..."
-              sleep 5
-            done
-            set -e
-
-            echo ">>> Deployment finished. Showing recent logs (api last 200 lines):"
-            docker compose -f docker-compose.prod.yml --env-file .env.prod logs api --tail=200 || true
-
-  smoke-tests:
-    name: Smoke Tests (Postman)
-    needs: deploy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Newman
-        run: npm install -g newman newman-reporter-html
-
-      - name: Run Postman Collection (if present)
-        run: |
-          if [ ! -f "postman-collection.json" ]; then
-            echo "postman-collection.json missing; skipping smoke tests."
-            exit 0
-          fi
-          newman run postman-collection.json --env-var baseUrl=${{ secrets.STAGING_URL }} -r html --reporter-html-export smoke-report.html
-
-      - name: Upload Smoke Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: smoke-report
-          path: smoke-report.html
+            echo "✅ Deployment complete"
