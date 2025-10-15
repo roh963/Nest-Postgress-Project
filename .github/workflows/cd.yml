@@ -62,22 +62,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ✅ FIX 1: simple check for missing secrets (no array usage)
+      # ✅ Simple secret verification
       - name: Verify required secrets
         run: |
-          REQUIRED_SECRETS=("EC2_HOST" "EC2_USER" "EC2_SSH_KEY" "GH_TOKEN" "DB_PASSWORD")
-          missing=0
-          for s in "${REQUIRED_SECRETS[@]}"; do
-            if [ -z "${{ secrets.EC2_HOST }}" ] && [ "$s" = "EC2_HOST" ]; then echo "Missing: EC2_HOST"; missing=1; fi
-            if [ -z "${{ secrets.EC2_USER }}" ] && [ "$s" = "EC2_USER" ]; then echo "Missing: EC2_USER"; missing=1; fi
-            if [ -z "${{ secrets.EC2_SSH_KEY }}" ] && [ "$s" = "EC2_SSH_KEY" ]; then echo "Missing: EC2_SSH_KEY"; missing=1; fi
-            if [ -z "${{ secrets.GH_TOKEN }}" ] && [ "$s" = "GH_TOKEN" ]; then echo "Missing: GH_TOKEN"; missing=1; fi
-            if [ -z "${{ secrets.DB_PASSWORD }}" ] && [ "$s" = "DB_PASSWORD" ]; then echo "Missing: DB_PASSWORD"; missing=1; fi
-          done
-          if [ "$missing" -ne 0 ]; then
-            echo "❌ Missing required secrets. Please add them in Settings → Secrets → Actions."
-            exit 1
-          fi
+          echo "Checking secrets..."
+          if [ -z "${{ secrets.EC2_HOST }}" ]; then echo "❌ Missing: EC2_HOST"; exit 1; fi
+          if [ -z "${{ secrets.EC2_USER }}" ]; then echo "❌ Missing: EC2_USER"; exit 1; fi
+          if [ -z "${{ secrets.EC2_SSH_KEY }}" ]; then echo "❌ Missing: EC2_SSH_KEY"; exit 1; fi
+          if [ -z "${{ secrets.GH_TOKEN }}" ]; then echo "❌ Missing: GH_TOKEN"; exit 1; fi
+          if [ -z "${{ secrets.DB_PASSWORD }}" ]; then echo "❌ Missing: DB_PASSWORD"; exit 1; fi
+          echo "✅ All required secrets present"
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.0
@@ -96,29 +90,29 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
+          envs: GH_TOKEN,ACTOR,DB_PASSWORD,JWT_SECRET,JWT_REFRESH_SECRET,CLOUDINARY_API_SECRET,WEBHOOK_URL_SLACK,THROTTLE_TTL,THROTTLE_LIMIT
           script: |
-            set -euo pipefail
+            set -eo pipefail
 
             echo ">>> Updating repo"
-            cd ~/nest-postgress-project || git clone https://github.com/roh963/nest-postgress-project.git ~/nest-postgress-project && cd ~/nest-postgress-project
+            cd ~/nest-postgress-project || (git clone https://github.com/roh963/nest-postgress-project.git ~/nest-postgress-project && cd ~/nest-postgress-project)
 
             git fetch origin
-            # ✅ FIX 2: default main branch safely (github.ref_name fallback removed)
-            git reset --hard origin/main || true
+            git reset --hard origin/main
 
             SHA=${{ github.sha }}
             echo "Using image tag: $SHA"
 
             echo ">>> Create env file"
             cat > .env.prod <<EOF
-            DB_PASSWORD=$DB_PASSWORD
-            DATABASE_URL=postgresql://postgres:$DB_PASSWORD@db:5432/nestdb?schema=public
-            JWT_SECRET=$JWT_SECRET
-            JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET
-            CLOUDINARY_API_SECRET=$CLOUDINARY_API_SECRET
-            WEBHOOK_URL_SLACK=$WEBHOOK_URL_SLACK
-            THROTTLE_TTL=$THROTTLE_TTL
-            THROTTLE_LIMIT=$THROTTLE_LIMIT
+            DB_PASSWORD=${DB_PASSWORD:-defaultpass}
+            DATABASE_URL=postgresql://postgres:${DB_PASSWORD:-defaultpass}@db:5432/nestdb?schema=public
+            JWT_SECRET=${JWT_SECRET:-default}
+            JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-default}
+            CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET:-default}
+            WEBHOOK_URL_SLACK=${WEBHOOK_URL_SLACK:-}
+            THROTTLE_TTL=${THROTTLE_TTL:-60}
+            THROTTLE_LIMIT=${THROTTLE_LIMIT:-10}
             CORS_ORIGINS=http://13.60.181.126,http://my-nest-app.duckdns.org,https://example.com
             EOF
             chmod 600 .env.prod
